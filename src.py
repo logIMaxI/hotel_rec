@@ -100,7 +100,7 @@ def build_analitics():
 
     plot_cols[len(list_of_content)] = st.dataframe(sorted_df)
 
-    plot_cols[len(list_of_content)] = st.button(
+    plot_cols[len(list_of_content) + 1] = st.button(
         label='Renew filters',
         key=2
     )
