@@ -1,11 +1,12 @@
 import os
 import pickle
 
+import pandas
 import pandas as pd
 import matplotlib.pyplot as plt
 from copy import deepcopy
 
-HOTELS = pd.read_parquet('hotels.parquet')
+HOTELS = pd.read_csv('hotels.csv')
 HOTELS = HOTELS[HOTELS['Price'] > 0]
 HOTELS = HOTELS[HOTELS['AreaSquare'] > 0]
 
@@ -94,6 +95,11 @@ def plot_content(config):
     ----------
     config : dict[str, list|str]
         Corrected user's filters
+
+    Returns:
+    -------
+    cur_hotels : pd.DataFrame
+        Filtered dataframe with info about hotels
     """
     bucket_attributes = [
         'AvailDays',
@@ -127,32 +133,34 @@ def plot_content(config):
 
     plt_number = 1
     diagram_cols = [
-        'countyName', 'cityName', 'HotelRating',
-        'AvailDays', 'RoomsCount', 'FloorsCount',
-        'Price', 'AreaSquare', 'PersCount'
+        'HotelRating', 'AvailDays', 'RoomsCount', 'FloorsCount',
+        'Price', 'AreaSquare', 'PersCount', 'countyName'
     ]
 
     for col in diagram_cols:
         if col not in config and col not in bucket_attributes:
-            path = f'imgs/plot{plt_number}.png'
+            path = f'srcs/plot{plt_number}.png'
             # colors_count = [
             #     len(elem[0]) for elem in MULTIPLE_CHOICES.items()
             #     if elem[1] == col
             # ]
             # colors = sns.color_palette('pastel')[0:colors_count[0]]
-
-            tmp = pd.DataFrame(cur_hotels[col].value_counts().reset_index())
-            plt.pie(
+            tmp = pd.DataFrame(
+                cur_hotels[col].value_counts()).reset_index()
+            ax = plt.subplot()
+            ax.pie(
                 x=tmp.iloc[:, 1],
                 labels=tmp.iloc[:, 0],
                 # colors=colors,
-                autopct='%.2f%%'
+                autopct='%.1f%%'
             )
-            plt.legend()
-            plt.title(f'{col}')
+            ax.set_title(f'{col}')
             plt.savefig(path)
+            plt.close()
 
             plt_number += 1
+
+    return cur_hotels
 
 
 def destroy_plots(list_of_content):
@@ -166,9 +174,9 @@ def destroy_plots(list_of_content):
     """
     for path in list_of_content:
         try:
-            os.remove(path)
+            os.remove('srcs/' + path)
         except:
-            print(f"Fatal error! Doesn't delete {path}")
+            print(f"Fatal error! Doesn't delete {'srcs/' + path}")
 
 
 def to_pickle(path, data):
@@ -203,3 +211,18 @@ def from_pickle(path):
     """
     with open(path, 'rb') as f:
         return pickle.load(f)
+
+
+def to_parquet(df: pandas.DataFrame, path: str):
+    """
+    Function for writing df into parquet file
+
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        Dataframe for writing
+
+    path : str
+        path for writing
+    """
+    df.to_parquet(path)
