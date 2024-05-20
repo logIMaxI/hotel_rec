@@ -83,7 +83,7 @@ class TfIdfTransformer:
 
         return similarity
 
-    def get_recommends(self, wish: str, k):
+    def get_recommends(self, wish: str):
         """
         Function for recommendation forming
 
@@ -91,9 +91,6 @@ class TfIdfTransformer:
         ----------
         wish : str
             Description about hotel from user
-
-        k : int
-            Count of recommendation
 
         Returns:
         -------
@@ -107,5 +104,5 @@ class TfIdfTransformer:
         cosine_sim = self.cosine_similarity(
             tfidf_matrix_array_city_name, wish_vector
         )
-        idx = np.argsort(cosine_sim)[::-1][:k]
-        return list(self.df.iloc[idx].index)
+        idx = np.argsort(cosine_sim)[::-1]
+        return list(idx)

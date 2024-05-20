@@ -81,7 +81,7 @@ def build_analitics():
             except Exception:
                 print(f"Fatal error! Doesn't open {'srcs/' + path}")
 
-    tfidf_transformer = TfIdfTransformer(df)
+    tfidf_transformer = TfIdfTransformer(utils.HOTELS)
     recommends_count = 5
     wish = ''
     if correct_config.get('Description', False):
@@ -94,10 +94,14 @@ def build_analitics():
         else:
             wish += ' ' + correct_config['HotelFacilities']
 
-    idx = tfidf_transformer.get_recommends(wish, recommends_count)
+    idx = tfidf_transformer.get_recommends(wish)
     sorted_df = df.iloc[idx].sort_values(by=['PersCount'], ascending=False)
+    sorted_df = sorted_df.join(df, how='inner', lsuffix='', rsuffix='_df')
+    right_cols = [col for col in sorted_df.columns if col[-3:] != '_df']
+    sorted_df = sorted_df[right_cols]
     utils.to_parquet(sorted_df, 'srcs/recommendations.parquet')
 
+    sorted_df = sorted_df.iloc[idx][:recommends_count]
     plot_cols[len(list_of_content)] = st.dataframe(sorted_df)
 
     plot_cols[len(list_of_content) + 1] = st.button(
