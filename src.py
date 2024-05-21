@@ -95,16 +95,15 @@ def build_analitics():
             wish += ' ' + correct_config['HotelFacilities']
 
     idx = tfidf_transformer.get_recommends(wish)
-    sorted_df = df.iloc[idx].sort_values(by=['PersCount'], ascending=False)
-    sorted_df = sorted_df.join(df, how='inner', lsuffix='', rsuffix='_df')
-    right_cols = [col for col in sorted_df.columns if col[-3:] != '_df']
-    sorted_df = sorted_df[right_cols]
-    utils.to_parquet(sorted_df, 'srcs/recommendations.parquet')
+    tmp_df = utils.HOTELS.iloc[idx]
+    drop_idx = [index for index in tmp_df.index if index not in df.index]
+    tmp_df = tmp_df.drop(drop_idx, axis = 0).sort_values(by=['PersCount'], ascending=False)
+    utils.to_parquet(tmp_df, 'srcs/recommendations.parquet')
 
-    sorted_df = sorted_df.iloc[idx][:recommends_count]
-    plot_cols[len(list_of_content)] = st.dataframe(sorted_df)
+    tmp_df = tmp_df.head(recommends_count)
+    plot_cols[len(list_of_content) - 1] = st.dataframe(tmp_df)
 
-    plot_cols[len(list_of_content) + 1] = st.button(
+    plot_cols[len(list_of_content)] = st.button(
         label='Renew filters',
         key=2
     )
